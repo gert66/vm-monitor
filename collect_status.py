@@ -154,7 +154,32 @@ for t in load(manual_path, []):
           "calls":0,"tokens":0,"cost_usd":0,"last_model":None
         })
 
-# Track important long-running workspace work that is not registered as a core.supervisor job.
+# Explicit status contract for long-running jobs outside core.supervisor.
+# A task writes task-status/<id>.json via task_status.py. This is authoritative.
+task_dir=os.path.join(os.path.dirname(__file__),"task-status")
+for sp in glob.glob(os.path.join(task_dir,"*.json")):
+    t=load(sp,{})
+    if not isinstance(t,dict) or not t.get("id"):
+        continue
+    jobs=[j for j in jobs if j.get("id") != t.get("id")]
+    jobs.append({
+      "id":str(t["id"]),
+      "title":str(t.get("title") or t["id"]),
+      "status":str(t.get("status") or "active"),
+      "phase":str(t.get("phase") or "WORKING"),
+      "now":clip(t.get("now") or ("Klaar." if t.get("status")=="done" else "Langdurige taak draait op de VM."),220),
+      "step":clip(t.get("step"),100) if t.get("step") else None,
+      "batch":None,
+      "max_steps":None,
+      "progress":int(t.get("progress") or (100 if t.get("status")=="done" else 0)),
+      "last_activity":str(t.get("updated_at") or iso(os.path.getmtime(sp))),
+      "human_question":None,
+      "error":clip(t.get("error"),220) if t.get("error") else None,
+      "calls":0,"tokens":0,"cost_usd":0,"last_model":None
+    })
+
+# Compatibility fallback for the import-flow worktree. Only infer ACTIVE while dirty.
+# Completion is recorded explicitly through the status contract.
 import_root="/home/myngle/worktrees/orchestrator-control-work"
 if os.path.isdir(import_root):
     try:
@@ -164,7 +189,7 @@ if os.path.isdir(import_root):
         ).stdout.strip().splitlines()
         tracked=[os.path.join(import_root, line[3:]) for line in dirty if len(line) > 3]
         mtimes=[os.path.getmtime(x) for x in tracked if os.path.exists(x)]
-        if dirty:
+        if dirty and not any(j.get("id")=="live-import-flow-update" for j in jobs):
             latest=max(mtimes or [time.time()])
             age_hours=(time.time()-latest)/3600
             jobs.append({
