@@ -215,42 +215,53 @@ if os.path.isdir(import_root):
     except Exception:
         pass
 
-# Detect the current HubSpot live audit even when it was launched outside core.supervisor.
-hubspot_log="/home/myngle/orchestrator/logs/hubspot-live-audit-20260918.log"
-if os.path.exists(hubspot_log):
-    try:
+# Detect the newest HubSpot live audit even when launched outside core.supervisor.
+# Source of truth is the audit Control Center JSON, not a hard-coded old log.
+try:
+    audit_files=glob.glob("/home/myngle/hubspot-audit-live-*/control_center.json")
+    if audit_files:
+        audit_file=max(audit_files,key=os.path.getmtime)
+        audit=load(audit_file,{})
         run_check=subprocess.run(
-            ["pgrep","-f","[r]un_hubspot_live_audit.py"],
+            ["pgrep","-f","[r]un_hubspot_live_audit.*[.]py"],
             capture_output=True,text=True,timeout=3
         )
         running=run_check.returncode==0 and bool(run_check.stdout.strip())
-        with open(hubspot_log,encoding="utf-8",errors="ignore") as f:
-            log_tail=f.read()[-12000:]
-        updated=iso(os.path.getmtime(hubspot_log))
+        raw_status=str(audit.get("status") or "").lower()
         if running:
-            hs_status,hs_phase,hs_progress="active","WORKING",35
-            hs_now="Leest HubSpot live uit en bouwt de CRM-audit op."
-            hs_error=None
-        elif "403 Client Error" in log_tail or "Traceback" in log_tail:
-            hs_status,hs_phase,hs_progress="error","ERROR",15
-            hs_now="Gestopt: HubSpot weigerde toegang tot deal-properties (403 Forbidden)."
-            hs_error="HubSpot API 403 Forbidden bij deal-properties."
+            hs_status="active"
+        elif raw_status in {"completed","complete","done","success","finished"}:
+            hs_status="done"
+        elif raw_status in {"failed","error","crashed"}:
+            hs_status="error"
+        elif raw_status in {"running","working","active"}:
+            hs_status="active"
         else:
-            hs_status,hs_phase,hs_progress="done","DONE",100
-            hs_now="HubSpot-audit afgerond."
-            hs_error=None
-        jobs=[j for j in jobs if j.get("id")!="hubspot-live-audit-20260918-001"]
+            hs_status="waiting"
+        hs_phase=str(audit.get("current_phase") or ("WORKING" if running else raw_status or "UNKNOWN")).upper()
+        try:
+            hs_progress=float(audit.get("overall_progress_pct") or 0)
+        except Exception:
+            hs_progress=0
+        hs_now=str(audit.get("current_activity_plain_language") or audit.get("latest_update_plain_language") or "HubSpot-auditstatus wordt bijgewerkt.")
+        hs_error=None
+        if hs_status=="error":
+            hs_error=str(audit.get("latest_update_plain_language") or "HubSpot-audit gestopt door een technische fout.")
+        updated=str(audit.get("last_heartbeat") or iso(os.path.getmtime(audit_file)))
+        run_id=str(audit.get("run_id") or os.path.basename(os.path.dirname(audit_file)))
+        # Remove stale/older HubSpot audit cards. Only the newest source-of-truth card remains.
+        jobs=[j for j in jobs if not ("hubspot" in (str(j.get("id",''))+" "+str(j.get("title",''))).lower() and "audit" in (str(j.get("id",''))+" "+str(j.get("title",''))).lower())]
         jobs.append({
-          "id":"hubspot-live-audit-20260918-001",
+          "id":run_id,
           "title":"HubSpot Live Audit",
           "status":hs_status,"phase":hs_phase,"now":hs_now,
           "step":"hubspot-live-audit","batch":None,"max_steps":None,
           "progress":hs_progress,"last_activity":updated,
           "human_question":None,"error":hs_error,
-          "calls":0,"tokens":0,"cost_usd":0,"last_model":None
+          "calls":0,"tokens":0,"cost_usd":float(audit.get("ai_cost_estimate") or 0),"last_model":"claude-sonnet-5"
         })
-    except Exception:
-        pass
+except Exception:
+    pass
 
 # Jobs explicitly removed from the Control Center are hidden from both monitors.
 suppressions_path="/home/myngle/orchestrator/state/work_monitor_suppressions.json"

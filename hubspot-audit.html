@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="nl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071018"><title>HubSpot Audit Console</title>
+<style>
+:root{color-scheme:dark;--bg:#071018;--card:#101b28;--line:#233548;--text:#f8fafc;--muted:#91a4b8;--green:#34d399;--blue:#60a5fa;--red:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:620px;margin:auto;padding:16px 14px 60px}.head{display:flex;align-items:center;gap:10px;margin-bottom:14px}.back{color:#d8e4ef;text-decoration:none;font-size:24px}.head h1{font-size:19px;margin:0;flex:1}.refresh{min-height:42px;border-radius:12px;border:1px solid #35506c;background:#132236;color:#fff;font-weight:700;padding:0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin-top:10px}.top{display:flex;justify-content:space-between;gap:12px}.status{display:inline-block;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;background:#1c2a3c;color:#cbd5e1}.status.running{background:#12392f;color:#8ef0c7}.status.failed{background:#481826;color:#fda4af}.status.completed,.status.done{background:#17364a;color:#b9e0ff}
+.pct{font-size:28px;font-weight:800}.bar{height:9px;background:#223247;border-radius:999px;overflow:hidden;margin:13px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#34d399);border-radius:999px}
+.label{font-size:11px;color:var(--muted);margin-top:12px}.value{font-size:15px;margin-top:3px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}.metric{border:1px solid var(--line);border-radius:13px;padding:11px}.metric b{display:block;font-size:18px}.metric span{font-size:11px;color:var(--muted)}
+.timeline{display:grid;gap:8px;margin-top:9px}.event{border:1px solid var(--line);border-radius:12px;padding:10px}.event time{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+details{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:10px}summary{cursor:pointer;color:#c5d2df;font-size:12px}.tech{white-space:pre-wrap;overflow-wrap:anywhere;color:#9fb2c4;font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;margin-top:8px}
+footer{text-align:center;color:#6f8398;font-size:11px;margin-top:20px}
+</style></head><body><main>
+<div class="head"><a class="back" href="index.html" aria-label="Terug">‹</a><h1>HubSpot Audit Console</h1><button id="refresh" class="refresh" type="button">↻ Vernieuwen</button></div>
+<div id="content" class="card">Auditstatus ophalen…</div>
+<footer id="footer"></footer>
+</main><script>
+const URL="https://raw.githubusercontent.com/gert66/vm-monitor/live/hubspot-audit/control_center.json";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function age(iso){if(!iso)return"onbekend";let s=Math.max(0,(Date.now()-new Date(iso))/1000);if(s<90)return"zojuist";if(s<5400)return Math.round(s/60)+" min geleden";if(s<172800)return Math.round(s/3600)+" uur geleden";return Math.round(s/86400)+" dagen geleden"}
+function eventList(items){if(!Array.isArray(items)||!items.length)return'<div class="value" style="color:var(--muted)">Nog niet beschikbaar</div>';return '<div class="timeline">'+items.slice(-10).reverse().map(e=>'<div class="event">'+esc(e.text||e.message||e.summary||"Update")+(e.timestamp?'<time>'+esc(age(e.timestamp))+'</time>':"")+'</div>').join("")+'</div>'}
+function metric(label,v){return '<div class="metric"><b>'+esc(v??"—")+'</b><span>'+esc(label)+'</span></div>'}
+function render(d){
+ const pct=Math.max(0,Math.min(100,Number(d.overall_progress_pct||0)));
+ const st=String(d.status||"onbekend").toLowerCase();
+ const volumes=d.data_volumes||{};
+ const cost=Number(d.ai_cost_estimate||0),budget=Number(d.ai_budget||0);
+ $("#content").innerHTML=
+ '<div class="top"><div><span class="status '+esc(st)+'">'+esc(st.toUpperCase())+'</span><div class="label">Run</div><div class="value">'+esc(d.run_id||"Nog niet beschikbaar")+'</div></div><div class="pct">'+pct.toFixed(1)+'%</div></div>'+
+ '<div class="bar"><i style="width:'+pct+'%"></i></div>'+
+ '<div class="label">Huidige fase</div><div class="value">'+esc(d.current_phase||"Nog niet beschikbaar")+'</div>'+
+ '<div class="label">Wat de consultant nu doet</div><div class="value">'+esc(d.current_activity_plain_language||"Nog niet beschikbaar")+'</div>'+
+ '<div class="label">Laatste update</div><div class="value">'+esc(d.latest_update_plain_language||"Nog niet beschikbaar")+'</div>'+
+ '<div class="grid">'+
+ metric("AI-kosten",budget?("€"+cost.toFixed(2)+" / €"+budget.toFixed(2)):("€"+cost.toFixed(2)))+
+ metric("Laatste heartbeat",age(d.last_heartbeat))+
+ metric("Bevestigde bevindingen",d.confirmed_findings_count)+
+ metric("Lopende onderzoeken",d.active_investigations_count)+
+ metric("Verworpen hypotheses",d.rejected_hypotheses_count)+
+ metric("Datagaps",d.data_gaps_count)+
+ metric("Companies",volumes.companies)+metric("Contacts",volumes.contacts)+
+ '</div>'+
+ '<div class="label">Recente stappen</div>'+eventList(d.recent_timeline_events)+
+ '<div class="label">Consultantbeslissingen</div>'+eventList(d.recent_consultant_decisions)+
+ '<details><summary>Technische details</summary><div class="tech">'+esc(JSON.stringify(d,null,2))+'</div></details>';
+ $("#footer").textContent="Live auditfeed · automatisch elke 30 seconden bijgewerkt";
+}
+async function load(){const b=$("#refresh");b.disabled=true;b.textContent="Bezig…";try{const r=await fetch(URL+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);render(await r.json())}catch(e){$("#content").innerHTML='<div class="value">Auditfeed kon niet worden opgehaald: '+esc(e.message)+'</div>'}finally{b.disabled=false;b.textContent="↻ Vernieuwen"}}
+$("#refresh").addEventListener("click",load);load();setInterval(load,30000);
+</script></body></html>
