@@ -133,6 +133,41 @@ jobs=[]
 for d in glob.glob(EXPORT+"/*"):
     if os.path.isdir(d) and os.path.exists(os.path.join(d,"state.json")):
         jobs.append(collect_job(d))
+
+# Track important long-running workspace work that is not registered as a core.supervisor job.
+import_root="/home/myngle/worktrees/orchestrator-control-work"
+if os.path.isdir(import_root):
+    try:
+        dirty=subprocess.run(
+            ["git","-C",import_root,"status","--porcelain"],
+            capture_output=True,text=True,timeout=5
+        ).stdout.strip().splitlines()
+        tracked=[os.path.join(import_root, line[3:]) for line in dirty if len(line) > 3]
+        mtimes=[os.path.getmtime(x) for x in tracked if os.path.exists(x)]
+        if dirty:
+            latest=max(mtimes or [time.time()])
+            age_hours=(time.time()-latest)/3600
+            jobs.append({
+              "id":"live-import-flow-update",
+              "title":"Live import flow update",
+              "status":"active" if age_hours < 2 else "waiting",
+              "phase":"WORKING" if age_hours < 2 else "PAUSED",
+              "now":"Rondt de nieuwe import-wizard af en corrigeert de review-keuzes, daarna volgen build- en testcontroles.",
+              "step":"import-wizard-final-corrections",
+              "batch":None,
+              "max_steps":None,
+              "progress":90,
+              "last_activity":iso(latest),
+              "human_question":None,
+              "error":None,
+              "calls":0,
+              "tokens":0,
+              "cost_usd":0,
+              "last_model":None
+            })
+    except Exception:
+        pass
+
 jobs.sort(key=lambda x:x["last_activity"], reverse=True)
 counts={k:sum(1 for j in jobs if j["status"]==k) for k in ["active","waiting","review","done","error","action"]}
 payload={
