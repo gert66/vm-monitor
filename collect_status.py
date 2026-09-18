@@ -215,6 +215,13 @@ if os.path.isdir(import_root):
     except Exception:
         pass
 
+# Jobs explicitly removed from the Control Center are hidden from both monitors.
+suppressions_path="/home/myngle/orchestrator/state/work_monitor_suppressions.json"
+suppressions=load(suppressions_path,{})
+if isinstance(suppressions,dict) and suppressions:
+    hidden_ids=set(str(k) for k in suppressions)
+    jobs=[j for j in jobs if str(j.get("id") or "") not in hidden_ids]
+
 jobs.sort(key=lambda x:x["last_activity"], reverse=True)
 counts={k:sum(1 for j in jobs if j["status"]==k) for k in ["active","waiting","review","done","error","action"]}
 vm=vm_stats()
