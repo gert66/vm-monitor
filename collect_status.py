@@ -215,6 +215,43 @@ if os.path.isdir(import_root):
     except Exception:
         pass
 
+# Detect the current HubSpot live audit even when it was launched outside core.supervisor.
+hubspot_log="/home/myngle/orchestrator/logs/hubspot-live-audit-20260918.log"
+if os.path.exists(hubspot_log):
+    try:
+        run_check=subprocess.run(
+            ["pgrep","-f","[r]un_hubspot_live_audit.py"],
+            capture_output=True,text=True,timeout=3
+        )
+        running=run_check.returncode==0 and bool(run_check.stdout.strip())
+        with open(hubspot_log,encoding="utf-8",errors="ignore") as f:
+            log_tail=f.read()[-12000:]
+        updated=iso(os.path.getmtime(hubspot_log))
+        if running:
+            hs_status,hs_phase,hs_progress="active","WORKING",35
+            hs_now="Leest HubSpot live uit en bouwt de CRM-audit op."
+            hs_error=None
+        elif "403 Client Error" in log_tail or "Traceback" in log_tail:
+            hs_status,hs_phase,hs_progress="error","ERROR",15
+            hs_now="Gestopt: HubSpot weigerde toegang tot deal-properties (403 Forbidden)."
+            hs_error="HubSpot API 403 Forbidden bij deal-properties."
+        else:
+            hs_status,hs_phase,hs_progress="done","DONE",100
+            hs_now="HubSpot-audit afgerond."
+            hs_error=None
+        jobs=[j for j in jobs if j.get("id")!="hubspot-live-audit-20260918-001"]
+        jobs.append({
+          "id":"hubspot-live-audit-20260918-001",
+          "title":"HubSpot Live Audit",
+          "status":hs_status,"phase":hs_phase,"now":hs_now,
+          "step":"hubspot-live-audit","batch":None,"max_steps":None,
+          "progress":hs_progress,"last_activity":updated,
+          "human_question":None,"error":hs_error,
+          "calls":0,"tokens":0,"cost_usd":0,"last_model":None
+        })
+    except Exception:
+        pass
+
 # Jobs explicitly removed from the Control Center are hidden from both monitors.
 suppressions_path="/home/myngle/orchestrator/state/work_monitor_suppressions.json"
 suppressions=load(suppressions_path,{})
