@@ -52,8 +52,10 @@ def cost_stats(jobdir):
 
 def collect_job(jobdir):
     jid=os.path.basename(jobdir)
-    state=load(os.path.join(jobdir,"state.json"),{})
-    job=load(os.path.join(jobdir,"job.json"),{})
+    live_dir=os.path.join("/home/myngle/orchestrator/jobs",jid)
+    source_dir=live_dir if os.path.exists(os.path.join(live_dir,"state.json")) else jobdir
+    state=load(os.path.join(source_dir,"state.json"),{})
+    job=load(os.path.join(source_dir,"job.json"),{}) or load(os.path.join(jobdir,"job.json"),{})
     batch=(state.get("runtime") or {}).get("batch") or {}
     phase=state.get("phase")
     hq=state.get("human_question")
@@ -64,7 +66,7 @@ def collect_job(jobdir):
     max_steps=job.get("max_steps")
     step=batch.get("step_id") or state.get("step_id")
     updated=state.get("updated_at")
-    mtime=max([os.path.getmtime(p) for p in glob.glob(jobdir+"/*") if os.path.isfile(p)] or [time.time()])
+    mtime=max([os.path.getmtime(p) for p in glob.glob(source_dir+"/*") if os.path.isfile(p)] or [time.time()])
     if status=="action":
         now="Jouw actie nodig: "+clip(hq or err or goal)
     elif status=="error":
@@ -89,7 +91,7 @@ def collect_job(jobdir):
       "last_activity":updated or iso(mtime),
       "human_question":clip(hq,280) if hq else None,
       "error":clip(err,220) if err else None,
-      **cost_stats(jobdir)
+      **cost_stats(source_dir)
     }
 def proc_snapshot():
     services={
