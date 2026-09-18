@@ -134,6 +134,26 @@ for d in glob.glob(EXPORT+"/*"):
     if os.path.isdir(d) and os.path.exists(os.path.join(d,"state.json")):
         jobs.append(collect_job(d))
 
+# Optional long-running tasks started outside the orchestrator.
+manual_path=os.path.join(os.path.dirname(__file__),"manual_tasks.json")
+for t in load(manual_path, []):
+    if isinstance(t,dict) and t.get("id") and t.get("status") not in {"done","hidden"}:
+        jobs.append({
+          "id":str(t["id"]),
+          "title":str(t.get("title") or t["id"]),
+          "status":str(t.get("status") or "active"),
+          "phase":str(t.get("phase") or "WORKING"),
+          "now":clip(t.get("now") or "Langdurige taak draait op de VM.",220),
+          "step":clip(t.get("step"),100) if t.get("step") else None,
+          "batch":None,
+          "max_steps":None,
+          "progress":int(t.get("progress") or 0),
+          "last_activity":str(t.get("last_activity") or iso()),
+          "human_question":None,
+          "error":None,
+          "calls":0,"tokens":0,"cost_usd":0,"last_model":None
+        })
+
 # Track important long-running workspace work that is not registered as a core.supervisor job.
 import_root="/home/myngle/worktrees/orchestrator-control-work"
 if os.path.isdir(import_root):
@@ -170,10 +190,23 @@ if os.path.isdir(import_root):
 
 jobs.sort(key=lambda x:x["last_activity"], reverse=True)
 counts={k:sum(1 for j in jobs if j["status"]==k) for k in ["active","waiting","review","done","error","action"]}
+vm=vm_stats()
+heavy=sum(1 for j in jobs if j["status"] in {"active","review"} and j.get("last_activity"))
+pressure=max(
+    float(vm.get("cpu_load_pct") or 0),
+    float(vm.get("ram_used_pct") or 0),
+    max(0.0,(float(vm.get("disk_used_pct") or 0)-70.0)*2.5),
+    min(100.0,heavy*18.0)
+)
+if pressure>=90: level,label,advice="critical","KRITIEK","Geen extra zware job starten"
+elif pressure>=75: level,label,advice="high","HOOG","Liever geen extra zware job starten"
+elif pressure>=55: level,label,advice="medium","NORMAAL","Nog één zware taak kan waarschijnlijk"
+else: level,label,advice="low","RUIMTE GENOEG","Er is ruimte voor extra werk"
 payload={
   "generated_at":iso(),
   "summary":counts,
-  "vm":vm_stats(),
+  "vm":vm,
+  "capacity":{"level":level,"label":label,"advice":advice,"pressure_pct":round(pressure),"heavy_tasks":heavy},
   "services":proc_snapshot(),
   "jobs":jobs
 }
