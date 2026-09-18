@@ -1,0 +1,74 @@
+{
+  "mission": "self-rebuild",
+  "title": "AI Orchestrator Starter Kit self-rebuild",
+  "status": "needs_human",
+  "human_action_required": true,
+  "current_phase": "NEEDS_HUMAN",
+  "current_task": "Perform the first clean-room installation of the claude profile on examiner VM2 (95.217.232.142) from the documented Linux entry point installer/start-here.sh, run the post-install acceptance runner on VM2, copy the transcript and acceptance artifacts into docs/evidence/2026-09-19-vm2/, and encode any installer defect discovered into the kit (never as a manual fix on VM2). Stop before the provider login and before the reboot phase.",
+  "job_id": "starter-self-rebuild-20260919",
+  "batches": 8,
+  "model_calls": 38,
+  "updated_at": "2026-09-19T10:48:55Z",
+  "phases": [
+    {
+      "id": "inventory",
+      "label": "Inventory",
+      "status": "done"
+    },
+    {
+      "id": "design",
+      "label": "Clean-room design",
+      "status": "done"
+    },
+    {
+      "id": "prepare",
+      "label": "Autonomous mission setup",
+      "status": "done"
+    },
+    {
+      "id": "build",
+      "label": "Build/refactor",
+      "status": "active"
+    },
+    {
+      "id": "static",
+      "label": "Static tests",
+      "status": "pending"
+    },
+    {
+      "id": "vm2install",
+      "label": "VM2 clean install",
+      "status": "pending"
+    },
+    {
+      "id": "reboot",
+      "label": "Reboot test",
+      "status": "pending"
+    },
+    {
+      "id": "e2e",
+      "label": "End-to-end job",
+      "status": "pending"
+    },
+    {
+      "id": "review",
+      "label": "Independent review",
+      "status": "pending"
+    },
+    {
+      "id": "repair",
+      "label": "Repair loop",
+      "status": "pending"
+    },
+    {
+      "id": "clean2",
+      "label": "Second clean install",
+      "status": "pending"
+    },
+    {
+      "id": "accept",
+      "label": "Final acceptance",
+      "status": "pending"
+    }
+  ]
+}
