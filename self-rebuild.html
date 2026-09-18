@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Self-Rebuild Monitor</title>
+<style>
+body{font-family:system-ui;background:#0b1020;color:#eaf0ff;max-width:980px;margin:32px auto;padding:0 18px}h1{font-size:28px}.muted{color:#9cabc9}.card{background:#141c31;border:1px solid #283655;border-radius:14px;padding:18px;margin:14px 0}.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.badge{padding:6px 10px;border-radius:999px;background:#263659}.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}.phase{padding:10px;border-radius:10px;background:#1b2741}.done{opacity:.65}.active{outline:2px solid #7aa2ff}.pending{color:#8390aa}.human{font-weight:700}.bar{height:10px;background:#202d49;border-radius:8px;overflow:hidden}.fill{height:100%;background:#7aa2ff}
+</style>
+<h1>SELF-REBUILD</h1><div class="muted">AI Orchestrator Starter Kit</div>
+<div class="card"><div class="top"><div><b id="status">Loading…</b><div id="task" class="muted"></div></div><div id="human" class="human"></div></div><div class="bar" style="margin-top:16px"><div id="fill" class="fill"></div></div></div>
+<div class="card"><h2>Mission progress</h2><div id="phases" class="phases"></div></div>
+<div class="card"><h2>VM health</h2><div id="health" class="muted">Waiting for health snapshot…</div></div>
+<script>
+async function refresh(){try{
+ let m=await fetch('self-rebuild-status.json?'+Date.now()).then(r=>r.json());
+ status.textContent=m.status.toUpperCase()+' · '+m.current_phase; task.textContent=m.current_task||'';
+ human.textContent=m.human_action_required?'HUMAN ACTION REQUIRED':'Human action required: NO';
+ let done=m.phases.filter(x=>x.status==='done').length; fill.style.width=(100*done/m.phases.length)+'%';
+ phases.innerHTML=m.phases.map(x=>'<div class="phase '+x.status+'"><b>'+x.label+'</b><br><span class="muted">'+x.status+'</span></div>').join('');
+ try{let h=await fetch('status.json?'+Date.now()).then(r=>r.json()); health.textContent='Disk '+h.disk_used_pct+'% · free '+h.disk_free_gb+' GB · RAM '+h.ram_used_pct+'% · uptime '+h.uptime_hours+' h';}catch(e){}
+}catch(e){status.textContent='MONITOR ERROR';task.textContent=String(e)}} refresh();setInterval(refresh,5000);
+</script>

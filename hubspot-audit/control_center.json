@@ -1,0 +1,289 @@
+{
+  "run_id": "run-20260918T165456Z",
+  "status": "done",
+  "overall_progress_pct": 100.0,
+  "current_phase": "done",
+  "current_activity_plain_language": "Audit complete.",
+  "latest_update_plain_language": "Audit afgerond. Rapport en Control Center-status zijn bijgewerkt.",
+  "completed_phases": [
+    "capability_probe",
+    "extraction",
+    "normalization",
+    "company_analysis",
+    "contact_analysis",
+    "deal_analysis",
+    "activity_analysis",
+    "property_analysis",
+    "pipeline_analysis",
+    "historical_imports",
+    "cross_object",
+    "ai_interpretation",
+    "report_generation",
+    "done"
+  ],
+  "next_phase": null,
+  "confirmed_findings_count": 6,
+  "active_investigations_count": 0,
+  "rejected_hypotheses_count": 0,
+  "data_gaps_count": 3,
+  "ai_cost_estimate": 0.33776799999999996,
+  "ai_budget": 5.0,
+  "last_heartbeat": "2026-09-18T19:38:54Z",
+  "recent_timeline_events": [
+    {
+      "timestamp": "2026-09-18T19:31:58Z",
+      "text": "Looking for signs of old data imports (e.g. from Salesforce or Apollo)."
+    },
+    {
+      "timestamp": "2026-09-18T19:32:02Z",
+      "text": "Onderzocht op sporen van historische bulk-imports."
+    },
+    {
+      "timestamp": "2026-09-18T19:32:02Z",
+      "text": "Cross-checking findings across companies, contacts and deals."
+    },
+    {
+      "timestamp": "2026-09-18T19:32:05Z",
+      "text": "0 open deals zonder recente activiteit gevonden."
+    },
+    {
+      "timestamp": "2026-09-18T19:32:05Z",
+      "text": "Using low-cost AI to interpret ambiguous patterns, only where useful."
+    },
+    {
+      "timestamp": "2026-09-18T19:38:54Z",
+      "text": "AI heeft 50 ambiguë clusters geïnterpreteerd."
+    },
+    {
+      "timestamp": "2026-09-18T19:38:54Z",
+      "text": "Writing the final audit report."
+    },
+    {
+      "timestamp": "2026-09-18T19:38:54Z",
+      "text": "HTML-auditrapport geschreven."
+    },
+    {
+      "timestamp": "2026-09-18T19:38:54Z",
+      "text": "Audit complete."
+    },
+    {
+      "timestamp": "2026-09-18T19:38:54Z",
+      "text": "Audit afgerond. Rapport en Control Center-status zijn bijgewerkt."
+    }
+  ],
+  "recent_consultant_decisions": [
+    {
+      "timestamp": "2026-09-18T19:38:54Z",
+      "text": "AI-interpretatie uitgevoerd voor 50 onderzoeksvragen binnen budget."
+    }
+  ],
+  "data_volumes": {
+    "companies": 275478,
+    "contacts": 447150,
+    "deals": 0
+  },
+  "subprocesses": [
+    {
+      "id": "capability_probe",
+      "label": "Toegangscontrole",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Controleert welke HubSpot-objecten veilig read-only leesbaar zijn.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "extract_companies",
+      "label": "Companies",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "records": 275478,
+      "pages": 2755,
+      "expected_records": 275466,
+      "detail": "275,478 records · 2,755 pagina's · afgerond",
+      "heartbeat": "2026-09-18T17:30:50Z"
+    },
+    {
+      "id": "extract_contacts",
+      "label": "Contacts",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "records": 447150,
+      "pages": 4472,
+      "expected_records": 447063,
+      "detail": "447,150 records · 4,472 pagina's · afgerond",
+      "heartbeat": "2026-09-18T18:29:36Z"
+    },
+    {
+      "id": "extract_deals",
+      "label": "Deals",
+      "status": "gap",
+      "progress_pct": null,
+      "progress_is_estimate": false,
+      "records": 0,
+      "pages": 0,
+      "detail": "Niet volledig leesbaar via deze HubSpot-scope; vastgelegd als datagap.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "extract_calls",
+      "label": "Calls",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "records": 216851,
+      "pages": 2169,
+      "expected_records": null,
+      "detail": "216,851 records · 2,169 pagina's · afgerond",
+      "heartbeat": "2026-09-18T18:59:40Z"
+    },
+    {
+      "id": "extract_meetings",
+      "label": "Meetings",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "records": 7548,
+      "pages": 76,
+      "expected_records": null,
+      "detail": "7,548 records · 76 pagina's · afgerond",
+      "heartbeat": "2026-09-18T18:59:54Z"
+    },
+    {
+      "id": "extract_emails",
+      "label": "Emails",
+      "status": "gap",
+      "progress_pct": null,
+      "progress_is_estimate": false,
+      "records": 0,
+      "pages": 0,
+      "detail": "Niet volledig leesbaar via deze HubSpot-scope; vastgelegd als datagap.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "extract_notes",
+      "label": "Notes",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "records": 29050,
+      "pages": 291,
+      "expected_records": null,
+      "detail": "29,050 records · 291 pagina's · afgerond",
+      "heartbeat": "2026-09-18T19:03:51Z"
+    },
+    {
+      "id": "extract_tasks",
+      "label": "Tasks",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "records": 209595,
+      "pages": 2096,
+      "expected_records": null,
+      "detail": "209,595 records · 2,096 pagina's · afgerond",
+      "heartbeat": "2026-09-18T19:31:35Z"
+    },
+    {
+      "id": "normalization",
+      "label": "Normalisatie",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "company_analysis",
+      "label": "Company-analyse",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "contact_analysis",
+      "label": "Contact-analyse",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "deal_analysis",
+      "label": "Deal-analyse",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "activity_analysis",
+      "label": "Activity-analyse",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "property_analysis",
+      "label": "Property-analyse",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "pipeline_analysis",
+      "label": "Pipeline-analyse",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "historical_imports",
+      "label": "Historische imports",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "cross_object",
+      "label": "Cross-object analyse",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "ai_interpretation",
+      "label": "AI-onderzoek",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    },
+    {
+      "id": "report_generation",
+      "label": "Rapportopbouw",
+      "status": "done",
+      "progress_pct": 100,
+      "progress_is_estimate": false,
+      "detail": "Afgerond.",
+      "heartbeat": "2026-09-18T19:38:54Z"
+    }
+  ]
+}
