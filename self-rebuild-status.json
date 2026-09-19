@@ -1,0 +1,74 @@
+{
+  "mission": "self-rebuild",
+  "title": "AI Orchestrator Starter Kit self-rebuild",
+  "status": "working",
+  "human_action_required": false,
+  "current_phase": "WORKING",
+  "current_task": "Make installer/install.sh idempotent and complete for a bare Ubuntu host, make installer/diagnose.sh a fail-closed post-install/post-reboot gate, and add a systemd watchdog so the health timer and monitor recover automatically after reboot.",
+  "job_id": "starter-self-rebuild-20260919",
+  "batches": 3,
+  "model_calls": 8,
+  "updated_at": "2026-09-19T06:45:54Z",
+  "phases": [
+    {
+      "id": "inventory",
+      "label": "Inventory",
+      "status": "done"
+    },
+    {
+      "id": "design",
+      "label": "Clean-room design",
+      "status": "done"
+    },
+    {
+      "id": "prepare",
+      "label": "Autonomous mission setup",
+      "status": "done"
+    },
+    {
+      "id": "build",
+      "label": "Build/refactor",
+      "status": "active"
+    },
+    {
+      "id": "static",
+      "label": "Static tests",
+      "status": "pending"
+    },
+    {
+      "id": "vm2install",
+      "label": "VM2 clean install",
+      "status": "pending"
+    },
+    {
+      "id": "reboot",
+      "label": "Reboot test",
+      "status": "pending"
+    },
+    {
+      "id": "e2e",
+      "label": "End-to-end job",
+      "status": "pending"
+    },
+    {
+      "id": "review",
+      "label": "Independent review",
+      "status": "pending"
+    },
+    {
+      "id": "repair",
+      "label": "Repair loop",
+      "status": "pending"
+    },
+    {
+      "id": "clean2",
+      "label": "Second clean install",
+      "status": "pending"
+    },
+    {
+      "id": "accept",
+      "label": "Final acceptance",
+      "status": "pending"
+    }
+  ]
+}
