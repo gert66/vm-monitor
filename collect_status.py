@@ -52,7 +52,7 @@ def cost_stats(jobdir):
 
 def collect_job(jobdir):
     jid=os.path.basename(jobdir)
-    live_dir=os.path.join("/home/myngle/orchestrator/jobs",jid)
+    live_dir=os.path.join("/opt/ai-orchestrator/jobs",jid)
     source_dir=live_dir if os.path.exists(os.path.join(live_dir,"state.json")) else jobdir
     state=load(os.path.join(source_dir,"state.json"),{})
     job=load(os.path.join(source_dir,"job.json"),{}) or load(os.path.join(jobdir,"job.json"),{})
@@ -218,7 +218,7 @@ if os.path.isdir(import_root):
 # Detect the newest HubSpot live audit even when launched outside core.supervisor.
 # Source of truth is the audit Control Center JSON, not a hard-coded old log.
 try:
-    audit_files=glob.glob("/home/myngle/hubspot-audit-live-*/control_center.json")
+    audit_files=[]
     if audit_files:
         audit_file=max(audit_files,key=os.path.getmtime)
         audit=load(audit_file,{})
@@ -264,7 +264,7 @@ except Exception:
     pass
 
 # Jobs explicitly removed from the Control Center are hidden from both monitors.
-suppressions_path="/home/myngle/orchestrator/state/work_monitor_suppressions.json"
+suppressions_path="/opt/ai-orchestrator/state/work_monitor_suppressions.json"
 suppressions=load(suppressions_path,{})
 if isinstance(suppressions,dict) and suppressions:
     hidden_ids=set(str(k) for k in suppressions)

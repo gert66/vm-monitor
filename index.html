@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="nl"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#071018"><title>VM Monitor</title>
+<meta name="theme-color" content="#071018"><title>VM Monitor · 16 GB</title>
 <style>
 :root{color-scheme:dark;--bg:#071018;--card:#101b28;--line:#233548;--text:#f8fafc;--muted:#91a4b8;--green:#34d399;--blue:#60a5fa;--amber:#fbbf24;--red:#fb7185}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
@@ -21,7 +21,7 @@ h1{font-size:19px;margin:0}.refresh,.hide,.restore{min-height:44px;border-radius
 footer{text-align:center;color:#6f8398;font-size:11px;margin-top:20px}
 @media(min-width:520px){.job{padding:18px}}
 </style></head><body><main>
-<div class="head"><h1>VM Monitor</h1><button id="refresh" class="refresh" type="button">↻ Vernieuwen</button></div>
+<div class="head"><h1>VM Monitor · 16 GB</h1><button id="refresh" class="refresh" type="button">↻ Vernieuwen</button></div>
 <div id="summary" class="summary">Actuele status ophalen…</div>
 <div id="capacity" class="capacity"><div class="caphead"><span class="caplabel">VM-belasting laden…</span><span class="capadvice"></span></div><div class="meters"></div><div class="capfoot"></div></div>
 <div id="hiddenRow" class="hiddenrow" hidden><button id="restore" class="restore" type="button"></button></div>
@@ -29,7 +29,7 @@ footer{text-align:center;color:#6f8398;font-size:11px;margin-top:20px}
 <div id="recentWrap" class="donebox" hidden><h2>Recent klaar</h2><div id="recent" class="recent"></div></div>
 <footer id="footer"></footer>
 </main><script>
-const STATUS_URL="https://raw.githubusercontent.com/gert66/vm-monitor/live/status.json";
+const STATUS_URL="https://raw.githubusercontent.com/gert66/vm-monitor/live-16gb/status.json";
 const DEFAULT_HIDDEN=["ai-challenge-department-v2-20260918","smart-parking-ai-demo-20260918"];
 const HIDDEN_KEY="orchestrator-monitor-hidden-v2",INIT_KEY="orchestrator-monitor-init-v2";
 const $=s=>document.querySelector(s);
