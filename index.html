@@ -1,58 +1,71 @@
 <!doctype html>
 <html lang="nl"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#071018"><title>VM Monitor</title>
+<meta name="theme-color" content="#070b14"><title>mYngle Control Center</title>
 <style>
-:root{color-scheme:dark;--bg:#071018;--card:#101b28;--line:#233548;--text:#f8fafc;--muted:#91a4b8;--green:#34d399;--blue:#60a5fa;--amber:#fbbf24;--red:#fb7185}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
-main{max-width:620px;margin:auto;padding:16px 14px 60px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
-h1{font-size:19px;margin:0}.refresh,.hide,.restore{min-height:44px;border-radius:12px;border:1px solid #35506c;background:#132236;color:#fff;font-weight:700}
-.refresh{padding:0 14px}.hide{min-height:36px;padding:0 10px;font-size:12px;background:#0d1724;color:#a9bbcc;border-color:#26384b}.restore{min-height:36px;padding:0 10px;font-size:12px;background:transparent;color:#9fb2c4;border-color:#26384b}
-.summary{color:var(--muted);font-size:13px;margin:-7px 0 8px}.capacity{background:#0d1825;border:1px solid var(--line);border-radius:16px;padding:13px;margin:10px 0 12px}.caphead{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.caplabel{font-weight:800}.capadvice{font-size:12px;color:var(--muted);text-align:right}.meters{display:grid;gap:7px;margin-top:10px}.meterrow{display:grid;grid-template-columns:52px 1fr 42px;gap:8px;align-items:center;font-size:12px;color:#b9c8d8}.meter{height:7px;background:#223247;border-radius:99px;overflow:hidden}.meter i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#34d399);border-radius:99px}.capfoot{margin-top:8px;font-size:11px;color:#71879b}.hiddenrow{display:flex;justify-content:flex-end;margin-bottom:12px}
-.jobs{display:grid;gap:12px}.job{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px}.job.audit{cursor:pointer}.job.audit:active{transform:scale(.995)}
-.toprow{display:flex;align-items:flex-start;gap:10px}.titlewrap{flex:1;min-width:0}.name{font-size:17px;font-weight:750;min-width:0}.pct{font-size:27px;font-weight:800;line-height:1}
-.state{display:inline-block;margin-top:6px;font-size:11px;font-weight:800;border-radius:999px;padding:4px 8px;background:#1c2a3c;color:#cbd5e1}
-.state.active,.state.review{background:#12392f;color:#8ef0c7}.state.waiting{background:#4a3811;color:#fde68a}.state.action{background:#48330d;color:#fde68a}.state.error{background:#481826;color:#fda4af}.state.done{background:#17364a;color:#b9e0ff}
-.bar{height:9px;background:#223247;border-radius:999px;overflow:hidden;margin:14px 0 12px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#34d399);border-radius:999px}
-.what{font-size:15px;color:#e6edf5}.phase{margin-top:8px;color:var(--muted);font-size:13px}.age{margin-top:10px;color:#7f93a8;font-size:12px}
-.need{margin-top:10px;padding:9px 10px;border-radius:10px;background:#3b2c10;color:#fde68a;font-size:13px}
-.actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.auditopen{color:#8ed8ff;text-decoration:none;font-size:12px;font-weight:800;padding:8px 0}.auditopen:hover{text-decoration:underline}.donebox{margin-top:22px}.donebox h2{font-size:14px;color:#b9c8d8;margin:0 0 8px}.recent{display:grid;gap:7px}.recent .row{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;color:#cbd5e1;font-size:13px}
-.empty{padding:24px 8px;color:var(--muted);text-align:center;border:1px dashed var(--line);border-radius:16px}
-footer{text-align:center;color:#6f8398;font-size:11px;margin-top:20px}
-@media(min-width:520px){.job{padding:18px}}
+:root{color-scheme:dark;--bg:#070b14;--card:#111827;--muted:#94a3b8;--line:#233047;--ok:#38d996;--warn:#fbbf24;--bad:#fb7185;--blue:#60a5fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f8fafc;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:860px;margin:auto;padding:14px 14px 80px}.top{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 86%,transparent);padding:8px 0 15px}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:10px}.brand h1{font-size:18px;margin:0}.stamp{font-size:11px;color:var(--muted)}
+nav{display:flex;gap:7px;overflow:auto;margin-top:12px}nav button{white-space:nowrap;border:1px solid var(--line);background:#0d1526;color:#cbd5e1;border-radius:99px;padding:8px 12px}
+nav button.active{background:#1e3a5f;color:#fff;border-color:#315b8d}.page{display:none}.page.active{display:block}
+.hero{border:1px solid var(--line);border-radius:18px;padding:16px;background:#0d1526;margin-top:4px}.hero.healthy{border-color:#1f6d56}.hero.warning{border-color:#9b6b12}.hero.critical{border-color:#8a3044}
+.hero strong{font-size:25px;display:block}.sub{color:var(--muted);margin-top:5px}.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.chip{background:#172033;border:1px solid var(--line);border-radius:99px;padding:5px 9px;font-size:12px}
+section{margin-top:18px}h2{font-size:15px;margin:0 0 9px;color:#dbeafe}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.metric,.service,.job,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.metric b{display:block;font-size:20px}.metric span,.tiny{color:var(--muted);font-size:12px}.services,.jobs{display:grid;gap:8px}.service{display:flex;justify-content:space-between;align-items:center}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:7px;background:var(--muted)}.dot.run{background:var(--ok)}
+.job{padding:13px}.jobhead{display:flex;gap:9px;align-items:flex-start}.badge{font-size:11px;font-weight:700;padding:4px 7px;border-radius:7px;background:#243047}.badge.active{background:#123c32;color:#7ef0c3}.badge.review{background:#173b62;color:#93c5fd}.badge.waiting,.badge.action{background:#50370b;color:#fde68a}.badge.error{background:#4c1723;color:#fda4af}.badge.done{background:#1d2939;color:#a8b3c5}
+.title{font-weight:700;flex:1}.now{margin-top:8px;color:#dce6f5}.meta{margin-top:7px;color:var(--muted);font-size:12px}.actionbox{margin-top:9px;padding:9px;border-radius:9px;background:#3f2c0b;color:#fde68a}
+.filters{display:flex;gap:7px;overflow:auto;padding-bottom:6px}.filters button{white-space:nowrap;border:1px solid var(--line);background:#0d1526;color:#cbd5e1;border-radius:99px;padding:7px 10px}.filters button.active{background:#1e3a5f;color:white}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:9px}canvas{width:100%;height:170px;display:block}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:5px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 5px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:500}td:last-child,th:last-child{text-align:right}
+.empty{color:var(--muted);padding:18px 2px}footer{margin-top:25px;color:var(--muted);font-size:11px;text-align:center}@media(min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
 </style></head><body><main>
-<div class="head"><h1>VM Monitor</h1><button id="refresh" class="refresh" type="button">↻ Vernieuwen</button></div>
-<div id="summary" class="summary">Actuele status ophalen…</div>
-<div id="capacity" class="capacity"><div class="caphead"><span class="caplabel">VM-belasting laden…</span><span class="capadvice"></span></div><div class="meters"></div><div class="capfoot"></div></div>
-<div id="hiddenRow" class="hiddenrow" hidden><button id="restore" class="restore" type="button"></button></div>
-<div id="jobs" class="jobs"></div>
-<div id="recentWrap" class="donebox" hidden><h2>Recent klaar</h2><div id="recent" class="recent"></div></div>
-<footer id="footer"></footer>
+<div class="top"><div class="brand"><h1>mYngle Control Center</h1><span class="stamp" id="stamp">laden…</span></div>
+<nav><button data-page="overview" class="active">Vandaag</button><button data-page="machine">Machine</button><button data-page="jobs">Jobs</button><button data-page="costs">Kosten</button></nav></div>
+<div id="overview" class="page active"></div><div id="machine" class="page"></div><div id="jobs" class="page"></div><div id="costs" class="page"></div>
+<footer>Read-only · ververst iedere minuut · VM blijft bron van waarheid</footer>
 </main><script>
-const STATUS_URL="https://raw.githubusercontent.com/gert66/vm-monitor/live/status.json";
-const DEFAULT_HIDDEN=["ai-challenge-department-v2-20260918","smart-parking-ai-demo-20260918"];
-const HIDDEN_KEY="orchestrator-monitor-hidden-v2",INIT_KEY="orchestrator-monitor-init-v2";
-const $=s=>document.querySelector(s);
+const STATUS_URL="https://raw.githubusercontent.com/gert66/vm-monitor/live/status.json";let data=null,filter="all";const labels={all:"Alles",active:"Werkt",review:"Review",waiting:"Wacht",action:"Actie nodig",error:"Fout",done:"Klaar"};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function getHidden(){try{return new Set(JSON.parse(localStorage.getItem(HIDDEN_KEY)||"[]"))}catch{return new Set()}}
-function saveHidden(s){localStorage.setItem(HIDDEN_KEY,JSON.stringify([...s]))}
-if(!localStorage.getItem(INIT_KEY)){saveHidden(new Set(DEFAULT_HIDDEN));localStorage.setItem(INIT_KEY,"1")}
-function age(iso){const s=Math.max(0,(Date.now()-new Date(iso))/1000);if(s<90)return"zojuist";if(s<5400)return Math.round(s/60)+" min geleden";if(s<172800)return Math.round(s/3600)+" uur geleden";return Math.round(s/86400)+" dagen geleden"}
-function hoursOld(j){return (Date.now()-new Date(j.last_activity))/36e5}
-function title(j){const m={"ai-challenge-v3-integrated-20260918":"Challengepagina V3","ai-challenge-department-v2-20260918":"Challengepagina V2","smart-parking-ai-demo-20260918":"Parking Who First","live-import-flow-update":"Live import flow update","overnight-path-planner-20260917":"3D Pathfinding","path-planner-gemini-final-20260917":"3D Pathfinding laatste run","overnight-maze-chase-20260916":"Maze Chase","overnight-rubik-2x2-20260917":"Rubik 2×2","overnight-electron-dose-lab-20260917":"Electron Dose Lab","overnight-mosse-tracker-20260917":"MOSSE Tracker"};return m[j.id]||j.title}
-function progress(j){if(Number.isFinite(j.progress))return Math.max(0,Math.min(100,j.progress));if(j.status==="done")return 100;const t=((j.step||"")+" "+(j.now||"")).toLowerCase();if(/final|integrale|eind|comparative|audit|laatste review/.test(t))return 95;if(j.status==="review")return 90;if(j.status==="action"&&!j.batch)return 10;if(j.batch){const base=Math.min(88,20+(j.batch-1)*13);return Math.max(15,base)}if(j.status==="error")return 70;return 35}
-function phaseText(j,p){const t=((j.step||"")+" "+(j.now||"")).toLowerCase();if(j.id==="live-import-flow-update"&&j.status==="active")return"Laatste correcties en daarna build/test";if(j.id==="live-import-flow-update"&&j.status==="waiting")return"Geen recente bestandsactiviteit, mogelijk gepauzeerd";if(p>=95)return"Laatste controlefase";if(j.status==="review")return"Review van de huidige stap";if(j.status==="action")return"Wacht op een noodzakelijke beslissing";if(j.status==="error")return"Gestopt door een fout";if(/test/.test(t))return"Testen";if(/review/.test(t))return"Review";if(/build|create|maak|bouw/.test(t))return"Bouwen";if(j.batch)return"Stap "+j.batch+(j.max_steps?" van maximaal "+j.max_steps:"");return"Bezig"}
-function useful(j){if(j.id.startsWith("feedback-"))return false;if(j.id==="hermes-advisory-smoke-001")return false;return hoursOld(j)<=12}
-function currentJobs(all){const h=getHidden();return all.filter(j=>useful(j)&&j.status!=="done"&&!h.has(j.id)).sort((a,b)=>new Date(b.last_activity)-new Date(a.last_activity))}
-function recentDone(all){const h=getHidden();return all.filter(j=>j.status==="done"&&hoursOld(j)<=4&&!j.id.startsWith("feedback-")&&!h.has(j.id)).sort((a,b)=>new Date(b.last_activity)-new Date(a.last_activity)).slice(0,5)}
-function hideJob(id){const h=getHidden();h.add(id);saveHidden(h);load()}
-function statusLabel(s){return s==="active"?"BEZIG":s==="review"?"REVIEW":s==="waiting"?"MOGELIJK GEPAUZEERD":s==="action"?"WACHT OP JOU":s==="error"?"GESTOPT":"KLAAR"}
-function isHubspotAudit(j){const h=((j.id||"")+" "+(j.title||"")).toLowerCase();return h.includes("hubspot")&&h.includes("audit")}
-function card(j){const p=progress(j);const audit=isHubspotAudit(j);const need=j.status==="action"&&j.human_question?'<div class="need">Wacht op jou: '+esc(j.human_question)+'</div>':"";const openAttrs=audit?' role="link" tabindex="0" onclick="location.href=\'hubspot-audit.html\'" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();location.href=\'hubspot-audit.html\'}"':'';const auditLink=audit?'<a class="auditopen" href="hubspot-audit.html" onclick="event.stopPropagation()">Live audit openen ›</a>':'';return '<article class="job'+(audit?' audit':'')+'"'+openAttrs+'><div class="toprow"><div class="titlewrap"><div class="name">'+esc(title(j))+'</div><span class="state '+j.status+'">'+esc(statusLabel(j.status))+'</span></div><div class="pct">'+p+'%</div></div><div class="bar"><i style="width:'+p+'%"></i></div><div class="what">'+esc(j.now)+'</div><div class="phase">'+esc(phaseText(j,p))+(j.batch?" · batch "+j.batch:"")+'</div>'+need+'<div class="age">Laatste activiteit '+age(j.last_activity)+'</div><div class="actions">'+auditLink+'<button class="hide" type="button" data-hide="'+esc(j.id)+'" onclick="event.stopPropagation()">✓ Klaar / weg uit overzicht</button></div></article>'}
-function updateHiddenRow(){const n=getHidden().size;$("#hiddenRow").hidden=!n;$("#restore").textContent=n+" weggeklikt · herstellen"}
-function renderCapacity(d){const v=d.vm||{},cap=d.capacity||{},box=$("#capacity"),vals=[["CPU",Number(v.cpu_load_pct||0)],["RAM",Number(v.ram_used_pct||0)],["Schijf",Number(v.disk_used_pct||0)]];box.querySelector(".caplabel").textContent="VM-belasting: "+(cap.label||"ONBEKEND");box.querySelector(".capadvice").textContent=cap.advice||"";box.querySelector(".meters").innerHTML=vals.map(x=>'<div class="meterrow"><span>'+x[0]+'</span><div class="meter"><i style="width:'+Math.min(100,x[1])+'%"></i></div><span>'+Math.round(x[1])+'%</span></div>').join("");box.querySelector(".capfoot").textContent=(cap.heavy_tasks||0)+" zware/actieve taken · "+(v.disk_free_gb??"?")+" GB schijfruimte vrij"}
-async function load(){const btn=$("#refresh");btn.disabled=true;btn.textContent="Bezig…";try{const r=await fetch(STATUS_URL+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const d=await r.json(),cur=currentJobs(d.jobs||[]),done=recentDone(d.jobs||[]);renderCapacity(d);$("#summary").textContent=cur.length?cur.length+" actuele werkjob"+(cur.length===1?"":"s")+" gevonden.":"Geen actieve werkjobs gevonden.";$("#jobs").innerHTML=cur.length?cur.map(card).join(""):'<div class="empty">Op dit moment is er geen actuele werkjob zichtbaar.</div>';document.querySelectorAll("[data-hide]").forEach(b=>b.addEventListener("click",()=>hideJob(b.dataset.hide)));$("#recentWrap").hidden=!done.length;$("#recent").innerHTML=done.map(j=>'<div class="row"><span>'+esc(title(j))+'</span><span>Klaar · '+age(j.last_activity)+'</span></div>').join("");updateHiddenRow();$("#footer").textContent="VM-status van "+new Date(d.generated_at).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})+" · automatisch elke minuut bijgewerkt"}catch(e){$("#summary").textContent="Status kon niet worden opgehaald.";$("#jobs").innerHTML='<div class="empty">'+esc(e.message)+'</div>'}finally{btn.disabled=false;btn.textContent="↻ Vernieuwen"}}
-$("#refresh").addEventListener("click",load);
-$("#restore").addEventListener("click",()=>{saveHidden(new Set());load()});
-load();setInterval(load,60000);
+const money=n=>"$"+Number(n||0).toFixed(2);const num=n=>Number(n||0).toLocaleString("nl-NL");
+function age(iso){if(!iso)return"onbekend";let s=Math.max(0,(Date.now()-new Date(iso))/1000);if(s<90)return Math.round(s)+" sec";if(s<5400)return Math.round(s/60)+" min";if(s<172800)return Math.round(s/3600)+" uur";return Math.round(s/86400)+" d"}
+function metric(label,value,sub=""){return '<div class="metric"><b>'+esc(value)+'</b><span>'+esc(label)+(sub?' · '+esc(sub):'')+'</span></div>'}
+function jobCard(j){const action=j.status==="action"&&j.human_question?'<div class="actionbox"><b>Jouw actie nodig</b><br>'+esc(j.human_question)+'</div>':"";return '<article class="job"><div class="jobhead"><span class="badge '+j.status+'">'+(labels[j.status]||esc(j.status))+'</span><div class="title">'+esc(j.title)+'</div></div><div class="now">'+esc(j.now)+'</div>'+action+'<div class="meta">laatste activiteit '+age(j.last_activity)+' geleden · '+num(j.calls)+' AI-calls · '+num(j.tokens)+' tokens · '+money(j.cost_usd)+(j.last_model?' · '+esc(j.last_model):'')+'</div></article>'}
+function overview(){
+ const v=data.vm||{},s=data.summary||{},c=data.costs?.periods||{},state=(data.health_state||"UNKNOWN").toUpperCase(),needs=s.action||0;
+ let msg=needs?needs+" job"+(needs===1?"":"s")+" heeft jouw actie nodig.":"Geen jobs wachten op jouw actie.";
+ let reasons=(data.health_reasons||[]).length?" · "+data.health_reasons.join(" · "):"";
+ let hero='<div class="hero '+state.toLowerCase()+'"><strong>'+state+'</strong><div class="sub">'+esc(msg+reasons)+'</div><div class="chips"><span class="chip">'+(s.active||0)+' actief</span><span class="chip">'+needs+' actie nodig</span><span class="chip">'+(s.error||0)+' fout</span><span class="chip">'+money(c.today?.cost_usd)+' vandaag</span></div></div>';
+ let m='<section><h2>Nu</h2><div class="grid">'+metric("RAM",(v.ram_used_pct??"?")+"%",(v.ram_used_gb??"?")+"/"+(v.ram_total_gb??"?")+" GB")+metric("CPU",(v.cpu_used_pct??"?")+"%","load "+(v.load_5m??"?"))+metric("Schijf",(v.disk_used_pct??"?")+"%",(v.disk_free_gb??"?")+" GB vrij")+metric("Kosten vandaag",money(c.today?.cost_usd),num(c.today?.calls)+" calls")+'</div></section>';
+ let actions=(data.jobs||[]).filter(j=>j.status==="action").slice(0,8);let a='<section><h2>Actie nodig</h2><div class="jobs">'+(actions.length?actions.map(jobCard).join(""):'<div class="empty">Geen interventies nodig.</div>')+'</div></section>';
+ let sv='<section><h2>Kernservices</h2><div class="services">'+(data.services||[]).map(x=>'<div class="service"><span><i class="dot '+(x.status==="running"?"run":"")+'"></i>'+esc(x.label)+'</span><span class="tiny">'+esc(x.status)+(x.count?' · '+x.count:'')+'</span></div>').join("")+'</div></section>';
+ document.querySelector("#overview").innerHTML=hero+m+a+sv;
+}
+function draw(canvas,points,key,label,maxHint=100){const ctx=canvas.getContext("2d"),dpr=window.devicePixelRatio||1,w=canvas.clientWidth,h=170;canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);ctx.strokeStyle="#233047";ctx.lineWidth=1;for(let i=0;i<5;i++){let y=10+i*(h-25)/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}let vals=points.map(p=>Number(p[key])).filter(Number.isFinite);if(!vals.length){ctx.fillStyle="#94a3b8";ctx.fillText("Nog onvoldoende historie",10,25);return}let max=Math.max(maxHint,Math.max(...vals)*1.1),min=0;ctx.strokeStyle="#60a5fa";ctx.lineWidth=2;ctx.beginPath();let started=false;points.forEach((p,i)=>{let val=Number(p[key]);if(!Number.isFinite(val))return;let x=i/Math.max(points.length-1,1)*(w-8)+4,y=h-12-(val-min)/(max-min)*(h-24);if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y)});ctx.stroke();ctx.fillStyle="#94a3b8";ctx.font="11px system-ui";ctx.fillText(label+" · max "+Math.max(...vals).toFixed(1),8,13)}
+function machine(){
+ const v=data.vm||{},pts=data.history?.last_24h||[],days=data.history?.daily_30d||[];
+ let cards='<div class="grid">'+metric("RAM",(v.ram_used_pct??"?")+"%",(v.ram_available_gb??"?")+" GB beschikbaar")+metric("CPU",(v.cpu_used_pct??"?")+"%",(v.cpu_count??"?")+" cores")+metric("Load 5m",v.load_5m??"?","1m "+(v.load_1m??"?")+" · 15m "+(v.load_15m??"?"))+metric("Schijf",(v.disk_used_pct??"?")+"%",(v.disk_free_gb??"?")+" GB vrij")+'</div>';
+ let charts='<section><h2>Afgelopen 24 uur</h2><div class="chart"><canvas id="ramChart"></canvas></div><div class="chart"><canvas id="cpuChart"></canvas></div><div class="chart"><canvas id="loadChart"></canvas></div></section>';
+ let rows=days.slice().reverse().map(d=>'<tr><td>'+esc(d.day)+'</td><td>'+d.ram_avg+'% / '+d.ram_max+'%</td><td>'+d.cpu_avg+'% / '+d.cpu_max+'%</td><td>'+d.disk_max+'%</td></tr>').join("");
+ let table='<section><h2>Dagtrend</h2><div class="panel"><table><thead><tr><th>Dag</th><th>RAM avg/max</th><th>CPU avg/max</th><th>Disk max</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
+ document.querySelector("#machine").innerHTML=cards+charts+table;requestAnimationFrame(()=>{draw(document.querySelector("#ramChart"),pts,"ram","RAM %");draw(document.querySelector("#cpuChart"),pts,"cpu","CPU %");draw(document.querySelector("#loadChart"),pts,"load","Load",Math.max(1,(v.cpu_count||1)))});
+}
+function jobs(){
+ let order=["all","action","active","review","waiting","error","done"],buttons='<div class="filters">'+order.map(k=>'<button data-filter="'+k+'" class="'+(filter===k?"active":"")+'">'+labels[k]+' '+(k==="all"?"":'('+(data.summary?.[k]||0)+')')+'</button>').join("")+'</div>';
+ let items=[...(data.jobs||[])],rank={action:0,error:1,active:2,review:3,waiting:4,done:5};items.sort((a,b)=>(rank[a.status]-rank[b.status])||String(b.last_activity).localeCompare(String(a.last_activity)));if(filter!=="all")items=items.filter(j=>j.status===filter);
+ document.querySelector("#jobs").innerHTML='<section><h2>Orchestrator-jobs</h2>'+buttons+'<div class="jobs">'+(items.length?items.map(jobCard).join(""):'<div class="empty">Geen jobs in deze categorie.</div>')+'</div></section>';
+ document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;jobs()});
+}
+function costs(){
+ const p=data.costs?.periods||{},models=data.costs?.models_30d||[],providers=data.costs?.providers_30d||[];
+ let cards='<div class="grid">'+metric("Vandaag",money(p.today?.cost_usd),num(p.today?.calls)+" calls")+metric("7 dagen",money(p["7d"]?.cost_usd),num(p["7d"]?.tokens)+" tokens")+metric("30 dagen",money(p["30d"]?.cost_usd),num(p["30d"]?.calls)+" calls")+metric("Tokens 30d",num(p["30d"]?.tokens),"geregistreerd")+'</div>';
+ let mt=models.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+num(x.calls)+'</td><td>'+num(x.tokens)+'</td><td>'+money(x.cost_usd)+'</td></tr>').join("");
+ let pt=providers.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+num(x.calls)+'</td><td>'+num(x.tokens)+'</td><td>'+money(x.cost_usd)+'</td></tr>').join("");
+ document.querySelector("#costs").innerHTML=cards+'<section><h2>Per model · 30 dagen</h2><div class="panel"><table><thead><tr><th>Model</th><th>Calls</th><th>Tokens</th><th>Kosten</th></tr></thead><tbody>'+mt+'</tbody></table></div></section><section><h2>Per provider · 30 dagen</h2><div class="panel"><table><thead><tr><th>Provider</th><th>Calls</th><th>Tokens</th><th>Kosten</th></tr></thead><tbody>'+pt+'</tbody></table></div></section>';
+}
+function render(){overview();machine();jobs();costs();document.querySelector("#stamp").textContent="update "+age(data.generated_at)+" geleden"}
+async function load(){try{const r=await fetch(STATUS_URL+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);data=await r.json();render()}catch(e){document.querySelector("#overview").innerHTML='<div class="hero critical"><strong>GEEN VERSE DATA</strong><div class="sub">'+esc(e.message)+'</div></div>'}}
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===b.dataset.page));if(b.dataset.page==="machine"&&data)machine()});
+load();setInterval(load,60000);window.addEventListener("resize",()=>{if(data&&document.querySelector("#machine").classList.contains("active"))machine()});
 </script></body></html>
