@@ -34,16 +34,21 @@ def clip(value, n=260):
     return text if len(text) <= n else text[:n-1] + "…"
 def classify(phase, human_question, error):
     p = str(phase or "UNKNOWN").upper()
+    # Terminal state always wins over stale fields left behind in state.json.
     if p in {"DONE","COMPLETED","FINISHED","SUCCESS"}:
         return "done"
-    if human_question or "HUMAN" in p or "APPROVAL" in p:
-        return "action"
-    if error or p in {"FAILED","ERROR","CRASHED"}:
+    if p in {"FAILED","ERROR","CRASHED"}:
         return "error"
+    if "HUMAN" in p or "APPROVAL" in p:
+        return "action"
     if p in {"WORKING","RUNNING","EXECUTING","PLANNING","EVIDENCE","COMMITTING"}:
         return "active"
     if p in {"REVIEWING","REVIEW"}:
         return "review"
+    # A human_question by itself is not authoritative; old questions can remain
+    # after a job moved on or completed.
+    if human_question and p not in {"WAITING","QUEUED","PENDING","PAUSED"}:
+        return "action"
     return "waiting"
 
 def call_stats(path):
@@ -79,14 +84,35 @@ def collect_job(jobdir):
     updated = state.get("updated_at")
     hb = load(jobdir / "heartbeat.json", {})
     heartbeat = hb.get("timestamp") or hb.get("at") or hb.get("updated_at")
+    unit = f"orchestrator@{jobdir.name}.service"
+    try:
+        service_active = subprocess.run(
+            ["systemctl","is-active",unit], capture_output=True, text=True, timeout=2
+        ).stdout.strip() == "active"
+    except Exception:
+        service_active = False
+    try:
+        provider_active = subprocess.run(
+            ["pgrep","-af",str(jobdir / "system_prompts")],
+            capture_output=True, text=True, timeout=2
+        ).returncode == 0
+    except Exception:
+        provider_active = False
+    actually_running = service_active or provider_active
     if not updated:
         try: updated = iso((jobdir / "state.json").stat().st_mtime)
         except Exception: updated = None
+    # A non-terminal state is only "active" when there is an actual supervisor
+    # or provider process. Otherwise it is stale/paused, not running.
+    if status in {"active","review"} and not actually_running:
+        status = "waiting"
     if status == "action": now = "Jouw actie nodig: " + clip(hq or err or goal)
     elif status == "error": now = "Fout: " + clip(err or goal)
     elif status == "review": now = "Controleert het resultaat van deze stap."
     elif status == "active": now = "Werkt aan: " + clip(goal)
     elif status == "done": now = "Klaar."
+    elif str(phase).upper() in {"WORKING","RUNNING","EXECUTING","PLANNING","EVIDENCE","COMMITTING","REVIEWING","REVIEW"} and not actually_running:
+        now = "State staat op " + str(phase) + ", maar er draait nu geen worker."
     else: now = "Wacht op de volgende stap."
     return {
         "id": jobdir.name,
@@ -99,6 +125,9 @@ def collect_job(jobdir):
         "max_steps": job.get("max_steps"),
         "last_activity": updated,
         "heartbeat": heartbeat,
+        "actually_running": actually_running,
+        "service_active": service_active,
+        "provider_active": provider_active,
         "human_question": clip(hq, 320) if hq else None,
         "error": clip(err, 240) if err else None,
         **call_stats(jobdir / "calls.jsonl"),
