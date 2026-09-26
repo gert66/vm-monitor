@@ -154,7 +154,7 @@ def history_snapshot():
             day_dt = datetime.strptime(fp.stem, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         except Exception:
             continue
-        if day_dt < now - timedelta(days=31):
+        if day_dt < now - timedelta(days=91):
             continue
         try:
             lines = fp.read_text(encoding="utf-8").splitlines()
@@ -179,7 +179,7 @@ def history_snapshot():
     for day in sorted(daily):
         d=daily[day]; n=max(d["n"],1)
         days.append({"day":day,"ram_avg":round(d["ram"]/n,1),"ram_max":round(d["ram_max"],1),"cpu_avg":round(d["cpu"]/max(d["cpu_n"],1),1),"cpu_max":round(d["cpu_max"],1),"load_avg":round(d["load"]/n,2),"disk_max":round(d["disk_max"],1)})
-    return {"last_24h":raw24[-300:],"daily_30d":days[-30:]}
+    return {"last_24h":raw24[-300:],"daily_90d":days[-90:]}
 
 def cost_snapshot():
     now_local = datetime.now(LOCAL_TZ)
@@ -187,10 +187,12 @@ def cost_snapshot():
         "today": now_local.replace(hour=0,minute=0,second=0,microsecond=0),
         "7d": now_local - timedelta(days=7),
         "30d": now_local - timedelta(days=30),
+        "90d": now_local - timedelta(days=90),
     }
-    totals={k:{"cost_usd":0.0,"tokens":0,"calls":0} for k in starts}
-    by_model=defaultdict(lambda: {"cost_usd":0.0,"tokens":0,"calls":0})
-    by_provider=defaultdict(lambda: {"cost_usd":0.0,"tokens":0,"calls":0})
+    actual={k:{"cost_usd":0.0,"tokens":0,"calls":0} for k in starts}
+    equivalent={k:{"cost_usd":0.0,"tokens":0,"calls":0} for k in starts}
+    by_provider=defaultdict(lambda: {"actual_cost_usd":0.0,"equivalent_cost_usd":0.0,"tokens":0,"calls":0})
+    metered_providers={"gemini","google","openai_api","anthropic_api"}
     for fp in JOBS.glob("*/calls.jsonl"):
         try: lines=fp.read_text(encoding="utf-8").splitlines()
         except Exception: continue
@@ -200,20 +202,39 @@ def cost_snapshot():
             raw=r.get("ts")
             try: dt=datetime.fromisoformat(raw.replace("Z","+00:00")).astimezone(LOCAL_TZ)
             except Exception: continue
+            provider=(r.get("provider") or "unknown").lower()
             cost=float(r.get("total_cost_usd") or 0); tokens=int(r.get("total_tokens") or 0)
-            models=r.get("models_used") or []; model=(models[-1] if models else r.get("model")) or "unknown"
-            provider=r.get("provider") or "unknown"
+            is_metered=provider in metered_providers
             for key,start in starts.items():
                 if dt >= start:
-                    totals[key]["cost_usd"] += cost; totals[key]["tokens"] += tokens; totals[key]["calls"] += 1
-            if dt >= starts["30d"]:
-                by_model[model]["cost_usd"] += cost; by_model[model]["tokens"] += tokens; by_model[model]["calls"] += 1
-                by_provider[provider]["cost_usd"] += cost; by_provider[provider]["tokens"] += tokens; by_provider[provider]["calls"] += 1
-    for bucket in [totals, by_model, by_provider]:
+                    equivalent[key]["cost_usd"] += cost; equivalent[key]["tokens"] += tokens; equivalent[key]["calls"] += 1
+                    if is_metered:
+                        actual[key]["cost_usd"] += cost; actual[key]["tokens"] += tokens; actual[key]["calls"] += 1
+            if dt >= starts["90d"]:
+                bp=by_provider[provider]; bp["equivalent_cost_usd"] += cost; bp["tokens"] += tokens; bp["calls"] += 1
+                if is_metered: bp["actual_cost_usd"] += cost
+    for bucket in [actual,equivalent]:
         for v in bucket.values(): v["cost_usd"]=round(v["cost_usd"],2)
-    models=sorted(({"name":k,**v} for k,v in by_model.items()),key=lambda x:x["cost_usd"],reverse=True)
-    providers=sorted(({"name":k,**v} for k,v in by_provider.items()),key=lambda x:x["cost_usd"],reverse=True)
-    return {"periods":totals,"models_30d":models,"providers_30d":providers}
+    providers=[]
+    for name,v in by_provider.items():
+        v["actual_cost_usd"]=round(v["actual_cost_usd"],2); v["equivalent_cost_usd"]=round(v["equivalent_cost_usd"],2)
+        providers.append({"name":name,**v})
+    providers.sort(key=lambda x:(x["actual_cost_usd"],x["equivalent_cost_usd"]),reverse=True)
+    registry=[
+        {"name":"Gemini Flash","key":"gemini","status":"active_if_used","metered":True},
+        {"name":"Serper","key":"serper","status":"usage_not_connected","metered":True},
+        {"name":"Zyte","key":"zyte","status":"usage_not_connected","metered":True},
+        {"name":"Lusha","key":"lusha","status":"usage_not_connected","metered":True},
+        {"name":"Apollo","key":"apollo","status":"usage_not_connected","metered":True},
+        {"name":"Klaviyo","key":"klaviyo","status":"usage_not_connected","metered":True},
+        {"name":"Firecrawl","key":"firecrawl","status":"disabled","metered":True},
+        {"name":"OpenAI API","key":"openai_api","status":"usage_not_connected","metered":True},
+        {"name":"Anthropic API","key":"anthropic_api","status":"usage_not_connected","metered":True},
+        {"name":"Claude subscription","key":"claude","status":"prepaid","metered":False},
+        {"name":"ChatGPT/Codex subscription","key":"codex","status":"prepaid","metered":False},
+    ]
+    return {"actual_periods":actual,"equivalent_periods":equivalent,"providers_90d":providers,"registry":registry}
+
 def main():
     health=load(HEALTH,{})
     jobs=[collect_job(Path(d)) for d in glob.glob(str(JOBS/"*")) if Path(d).is_dir() and (Path(d)/"state.json").exists()]
@@ -242,7 +263,7 @@ def main():
     tmp=OUT.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(payload,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
     tmp.replace(OUT)
-    print(json.dumps({"generated_at":payload["generated_at"],"health":payload["health_state"],"jobs":len(jobs),"summary":summary,"today_cost":payload["costs"]["periods"]["today"]["cost_usd"]}))
+    print(json.dumps({"generated_at":payload["generated_at"],"health":payload["health_state"],"jobs":len(jobs),"summary":summary,"actual_today_cost":payload["costs"]["actual_periods"]["today"]["cost_usd"]}))
 
 if __name__=="__main__":
     main()
